@@ -11,7 +11,7 @@ body {
 }
 
 .eye_container {
-   transition: transform 0.1s ease-out; 
+  transition: transform 0.1s ease-out;
   position: relative;
   margin-top: 20vh;
   display: flex;
@@ -32,7 +32,7 @@ body {
 
 .timer {
   position: absolute;
-  top: 45vh;
+  top: 40vh;
 }
 
 #time {

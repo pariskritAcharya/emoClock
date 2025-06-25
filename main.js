@@ -3,7 +3,7 @@ let isAnimating = false;
 let closeTimeout;
 let blinkInterval;
 let positionTimeout;
-
+let sleepBlinkTimeout;
 let wakeLock = null;
 
 async function requestWakeLock() {
@@ -21,59 +21,41 @@ async function requestWakeLock() {
 
 
 
-// Random helper
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// Random blinking when eye is open
 function startBlinking() {
   stopBlinking();
   blinkInterval = setInterval(() => {
-    anime({
-      targets: '.eye',
-      height: [
-        { value: '50px', duration: 150, easing: 'easeInOutQuad' },
-        { value: '150px', duration: 150, easing: 'easeInOutQuad' }
-      ],
-      top: [
-        { value: '30px', duration: 150, easing: 'easeInOutQuad' },
-        { value: '0px', duration: 150, easing: 'easeInOutQuad' }
-      ]
-    });
-  }, getRandomInt(2000, 5000));
+    blinkOnce();
+  }, getRandomInt(2000, 5000)); // slower and less frequent blinks
 }
 
 function stopBlinking() {
   clearInterval(blinkInterval);
 }
 
-// Blink once even while sleeping
-function blinkWhileSleeping() {
+function blinkOnce() {
   anime({
     targets: '.eye',
     height: [
-      { value: '150px', duration: 150, easing: 'easeInOutQuad' },
-      { value: '50px', duration: 150, easing: 'easeInOutQuad' }
+      { value: '50px', duration: 200, easing: 'easeInOutQuad' },
+      { value: '150px', duration: 200, easing: 'easeInOutQuad' }
     ],
     top: [
-      { value: '0px', duration: 150, easing: 'easeInOutQuad' },
-      { value: '30px', duration: 150, easing: 'easeInOutQuad' }
+      { value: '30px', duration: 200, easing: 'easeInOutQuad' },
+      { value: '0px', duration: 200, easing: 'easeInOutQuad' }
     ]
   });
 }
 
-// Eye closing logic
 function close_eye() {
-  if (isAnimating) return;
-
-  if (!eyeOpen) {
-    blinkWhileSleeping();
-    return;
-  }
+  if (isAnimating || !eyeOpen) return;
 
   stopBlinking();
   isAnimating = true;
+
   anime({
     targets: '.eye',
     height: '50px',
@@ -83,11 +65,11 @@ function close_eye() {
     complete: () => {
       eyeOpen = false;
       isAnimating = false;
+      startSleepBlinkLoop();
     }
   });
 }
 
-// Eye opening logic
 function open_eye() {
   if (eyeOpen || isAnimating) return;
 
@@ -96,7 +78,7 @@ function open_eye() {
     targets: '.eye',
     height: '150px',
     top: '0px',
-    duration: 250,
+    duration: 300,
     easing: 'easeInOutQuad',
     complete: () => {
       eyeOpen = true;
@@ -106,19 +88,44 @@ function open_eye() {
   });
 }
 
-// Handle mouse movement and inactivity
+function startSleepBlinkLoop() {
+  clearTimeout(sleepBlinkTimeout);
+
+  sleepBlinkTimeout = setTimeout(async () => {
+    if (eyeOpen) return; // user activity woke it up
+
+    open_eye();
+
+    await sleep(getRandomInt(4000, 7000)); // eye remains open gently
+
+    const blinks = getRandomInt(1, 2);
+    for (let i = 0; i < blinks; i++) {
+      blinkOnce();
+      await sleep(getRandomInt(2500, 4500));
+    }
+
+    close_eye();
+  }, getRandomInt(20000, 40000)); // dream blink every 20–40s
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function eye_control() {
   document.addEventListener('mousemove', () => {
-    open_eye(); // Open if not already
+    open_eye();
     clearTimeout(closeTimeout);
     clearTimeout(positionTimeout);
+    clearTimeout(sleepBlinkTimeout);
+    stopBlinking();
+    startBlinking();
 
-    // Close after 4s of inactivity
+    // Now takes 15–25s of inactivity to fall asleep
     closeTimeout = setTimeout(() => {
       close_eye();
-    }, 4000);
+    }, getRandomInt(15000, 25000));
 
-    // Reset eye container to center after 1s
     positionTimeout = setTimeout(() => {
       document.querySelectorAll('.eye_container').forEach(container => {
         container.style.transform = `translateX(0px)`;
@@ -127,7 +134,6 @@ function eye_control() {
   });
 }
 
-// Eye glides left and right based on horizontal mouse position
 function horizontalEyeMovement() {
   document.addEventListener('mousemove', (event) => {
     document.querySelectorAll('.eye_container').forEach(container => {
@@ -144,14 +150,12 @@ function horizontalEyeMovement() {
   });
 }
 
-// Reapply wake lock on fullscreen
 document.addEventListener("fullscreenchange", () => {
   if (document.fullscreenElement) {
     requestWakeLock();
   }
 });
 
-// Run everything on page load
 window.onload = function () {
   open_eye();
   requestWakeLock();

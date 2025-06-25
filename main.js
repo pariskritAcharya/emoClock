@@ -4,7 +4,20 @@ let closeTimeout;
 let blinkInterval;
 let positionTimeout;
 
+let wakeLock = null;
 
+async function requestWakeLock() {
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    console.log("Wake Lock is active");
+
+    wakeLock.addEventListener('release', () => {
+      console.log('Wake Lock was released');
+    });
+  } catch (err) {
+    console.error(`${err.name}, ${err.message}`);
+  }
+}
 
 
 
@@ -141,6 +154,7 @@ document.addEventListener("fullscreenchange", () => {
 // Run everything on page load
 window.onload = function () {
   open_eye();
+  requestWakeLock();
   eye_control();
   horizontalEyeMovement();
 };

@@ -1,3 +1,3 @@
 link: 
 
-[text](https://pariskritacharya.github.io/emoClock/)
+[link to website](https://pariskritacharya.github.io/emoClock/)

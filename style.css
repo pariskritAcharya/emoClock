@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Darumadrop+One&display=swap");
+
 body {
   background: #1c2120;
   margin: 0;
@@ -15,15 +16,15 @@ body {
   position: relative;
   margin-top: 20vh;
   display: flex;
-  gap: 50px;
+}
 
+.eye:first-child {
+  margin-right: 40px;
 }
 
 .eye {
   transition: height 0.1s ease-out, top 0.1s ease-out;
   position: relative;
-  width: 40px;
-  height: 50px;
   background: #4ddde0;
   width: 100px;
   height: 150px;
@@ -35,7 +36,6 @@ body {
   position: absolute;
   top: 50vh;
 }
-
 
 #time {
   font-size: 2.5rem;

@@ -15,7 +15,8 @@ body {
   position: relative;
   margin-top: 20vh;
   display: flex;
-  gap: 40px;
+  gap: 50px;
+
 }
 
 .eye {

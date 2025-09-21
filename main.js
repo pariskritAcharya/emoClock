@@ -19,8 +19,6 @@ async function requestWakeLock() {
   }
 }
 
-
-
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -29,7 +27,7 @@ function startBlinking() {
   stopBlinking();
   blinkInterval = setInterval(() => {
     blinkOnce();
-  }, getRandomInt(2000, 5000)); // slower and less frequent blinks
+  }, getRandomInt(2000, 5000));
 }
 
 function stopBlinking() {
@@ -92,11 +90,11 @@ function startSleepBlinkLoop() {
   clearTimeout(sleepBlinkTimeout);
 
   sleepBlinkTimeout = setTimeout(async () => {
-    if (eyeOpen) return; // user activity woke it up
+    if (eyeOpen) return;
 
     open_eye();
 
-    await sleep(getRandomInt(4000, 7000)); // eye remains open gently
+    await sleep(getRandomInt(4000, 7000));
 
     const blinks = getRandomInt(1, 2);
     for (let i = 0; i < blinks; i++) {
@@ -105,7 +103,7 @@ function startSleepBlinkLoop() {
     }
 
     close_eye();
-  }, getRandomInt(20000, 40000)); // dream blink every 20–40s
+  }, getRandomInt(20000, 40000));
 }
 
 function sleep(ms) {
@@ -121,7 +119,6 @@ function eye_control() {
     stopBlinking();
     startBlinking();
 
-    // Now takes 15–25s of inactivity to fall asleep
     closeTimeout = setTimeout(() => {
       close_eye();
     }, getRandomInt(15000, 25000));
@@ -150,6 +147,29 @@ function horizontalEyeMovement() {
   });
 }
 
+function updateKathmanduTime() {
+  const timeElement = document.getElementById("time");
+
+  if (!timeElement) {
+    console.error("Time element with id='time' not found.");
+    return;
+  }
+  
+  const now = new Date();
+  const options = {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true, // This is the key change for 12-hour format
+    timeZone: 'Asia/Kathmandu'
+  };
+  
+  const formatter = new Intl.DateTimeFormat('en-US', options);
+  const kathmanduTime = formatter.format(now);
+  
+  timeElement.textContent = kathmanduTime;
+}
+
 document.addEventListener("fullscreenchange", () => {
   if (document.fullscreenElement) {
     requestWakeLock();
@@ -161,4 +181,7 @@ window.onload = function () {
   requestWakeLock();
   eye_control();
   horizontalEyeMovement();
+  
+  updateKathmanduTime();
+  setInterval(updateKathmanduTime, 1000);
 };
